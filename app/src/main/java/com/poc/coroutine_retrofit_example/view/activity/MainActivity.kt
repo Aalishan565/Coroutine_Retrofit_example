@@ -3,6 +3,7 @@ package com.poc.coroutine_retrofit_example.view.activity
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -30,6 +31,10 @@ class MainActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
             postAdapter = PostAdapter(this, it as ArrayList<Post>)
             rvPost.adapter = postAdapter
+        })
+        postViewModel.errorLiveData.observe(this, Observer {
+            progressBar.visibility = View.GONE
+            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
         })
     }
 }
