@@ -5,11 +5,11 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.poc.coroutine_retrofit_example.R
 import com.poc.coroutine_retrofit_example.model.response.Post
+import com.poc.coroutine_retrofit_example.network.Resource
 import com.poc.coroutine_retrofit_example.view.adapter.PostAdapter
 import com.poc.coroutine_retrofit_example.viewmodel.PostViewModel
 
@@ -25,16 +25,27 @@ class MainActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         rvPost = findViewById(R.id.recyclerView)
         postViewModel = ViewModelProvider(this).get(PostViewModel::class.java)
-        progressBar.visibility = View.VISIBLE
+
         postViewModel.getPost()
-        postViewModel.mutablePostLiveData.observe(this, Observer {
-            progressBar.visibility = View.GONE
-            postAdapter = PostAdapter(this, it as ArrayList<Post>)
-            rvPost.adapter = postAdapter
+        postViewModel.mutablePostLiveData.observe(this, { response ->
+            when (response) {
+                is Resource.Success -> {
+                    progressBar.visibility = View.GONE
+                    postAdapter = PostAdapter(this, response.data as ArrayList<Post>)
+                    rvPost.adapter = postAdapter
+                }
+                is Resource.Error -> {
+                    progressBar.visibility = View.GONE
+                    response.message?.let { message ->
+                        Toast.makeText(this, "An error occured: $message", Toast.LENGTH_LONG).show()
+                    }
+                }
+                is Resource.Loading -> {
+                    progressBar.visibility = View.VISIBLE
+
+                }
+            }
         })
-        postViewModel.errorLiveData.observe(this, Observer {
-            progressBar.visibility = View.GONE
-            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-        })
+
     }
 }
